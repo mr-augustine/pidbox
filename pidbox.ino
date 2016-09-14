@@ -4,8 +4,6 @@
  * author(s): mr-augustine, khaosduke
  *
  */
-// #include <SoftwareSerial.h>
-// #include "lcd420.h"
 #include "Lcd420.h"
 
 #define LCD_RX_PIN 2
@@ -28,6 +26,16 @@ void setup() {
   move_cursor(lcd,17);
   write_chars(lcd,"@",1);
 
+  float k_prop = 3.14567890;
+  char line_0[20];
+  memset(line_0, ' ', 20);
+
+  strcpy(line_0, "P: ");
+  dtostrf(k_prop, 2, 4, &line_0[strlen(line_0)]);
+
+  delay(3000);
+  move_cursor_to_line(lcd, 3);
+  write_chars(lcd, line_0, 20);
 }
 
 void loop() {

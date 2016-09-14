@@ -32,11 +32,3 @@ extern "C" void write_chars(CLcd420, char * c, int buff_size);
 extern "C" void set_blinking_cursor(CLcd420);
 extern "C" void move_cursor_to_line(CLcd420,int line_num);
 extern "C" void move_cursor(CLcd420, int pos);
-
-//SoftwareSerial * myLcd;
-
-/*uint8_t lcd420_init(int lcd_rx_pin, int dummy_pin) {
-  // myLcd = new SoftwareSerial(dummy_pin, lcd_rx_pin);
-
-}
-*/
