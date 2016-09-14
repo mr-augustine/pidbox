@@ -1,19 +1,6 @@
 #include "Lcd420.h"
 
-#define LINE_0_START_ADDR 0
-#define LINE_1_START_ADDR 64
-#define LINE_2_START_ADDR 20
-#define LINE_3_START_ADDR 84
-
-
-#define CMD_RETURN_HOME         0x02
-#define CMD_CLEAR_DISPLAY       0x01
-#define SPECIAL_CMD             0xFE
-#define CMD_BLINKING_CURSOR_ON  0x0F
-#define CURSOR_PREFIX           0x80
-
-
-Lcd420::Lcd420(int lcd_tx_pin, int lcd_rx_pin) {
+Lcd420::Lcd420(int lcd_tx_pin, int lcd_rx_pin) : currentField {0} {
   myLcd = new SoftwareSerial(lcd_tx_pin, lcd_rx_pin);
   myLcd->begin(9600);
 }
@@ -61,7 +48,16 @@ void Lcd420::clearScreen() {
 }
 
 void Lcd420::writeChars(char * c, int buff_size) {
+  replaceNullWithSpace(c, buff_size);
   myLcd->write(c, buff_size);
+}
+
+void Lcd420::replaceNullWithSpace(char * c, int buff_size) {
+  for (int i = 0; i < buff_size; i++) {
+    if (c[i] == '\0') {
+      c[i] = ' ';
+    }
+  }
 }
 
 void Lcd420::setBlinkingCursor() {
@@ -98,6 +94,34 @@ void Lcd420::moveCursor(int pos) {
   myLcd->write(SPECIAL_CMD);
   myLcd->write(CURSOR_PREFIX+real_pos);
 }
+
+void Lcd420::moveCursorToField(int field_num) {
+  currentField = field_num;
+
+  switch (field_num) {
+    case 0:
+      moveCursor(FIELD_0_POS);
+      break;
+    case 1:
+      moveCursor(FIELD_1_POS);
+      break;
+    case 2:
+      moveCursor(FIELD_2_POS);
+      break;
+    case 3:
+      moveCursor(FIELD_3_POS);
+      break;
+    case 4:
+      moveCursor(FIELD_4_POS);
+      break;
+    default:
+      moveCursor(FIELD_0_POS);
+      currentField = 0;
+  }
+}
+
+
+
 /// C Below ///
 
 CLcd420 new_CLcd420(int lcd_tx_pin, int lcd_rx_pin) {

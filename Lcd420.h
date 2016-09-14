@@ -2,6 +2,27 @@
 
 #include <SoftwareSerial.h>
 
+
+#define LINE_0_START_ADDR 0
+#define LINE_1_START_ADDR 64
+#define LINE_2_START_ADDR 20
+#define LINE_3_START_ADDR 84
+
+#define FIELD_0_POS 0
+#define FIELD_1_POS 20
+#define FIELD_2_POS 40
+#define FIELD_3_POS 60
+#define FIELD_4_POS 93
+
+#define CMD_RETURN_HOME         0x02
+#define CMD_CLEAR_DISPLAY       0x01
+#define SPECIAL_CMD             0xFE
+#define CMD_BLINKING_CURSOR_ON  0x0F
+#define CURSOR_PREFIX           0x80
+
+#define NUM_COLUMNS 20
+#define NUM_ROWS    4
+
 class Lcd420 {
   public:
   Lcd420(int lcd_rx_pin, int lcd_tx_pin);
@@ -11,12 +32,16 @@ class Lcd420 {
   void writeChars(char * c, int buff_size);
   void setBlinkingCursor();
   void moveCursorToLine(int line_num);
+  void moveCursorToField(int field_num);
   void moveCursor(int pos);
 
   private:
+  int currentField;
+
   SoftwareSerial * myLcd;
   int getStartOfLine(int line);
   int remapCursorPosition(int pos);
+  void replaceNullWithSpace(char * c, int buff_size);
 
 };
 
