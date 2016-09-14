@@ -16,6 +16,18 @@ CLcd420 lcd = new_CLcd420(LCD_TX_PIN, LCD_RX_PIN);
 void setup() {
   delay(500);
   clear_screen(lcd);
+
+  write_chars(lcd, "hey!", 4);
+  delay(3000);
+  clear_screen(lcd);
+
+  move_cursor_to_line(lcd,2);
+  set_blinking_cursor(lcd);
+
+  delay(3000);
+  move_cursor(lcd,17);
+  write_chars(lcd,"@",1);
+
 }
 
 void loop() {
