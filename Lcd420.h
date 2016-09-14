@@ -8,11 +8,12 @@
 #define LINE_2_START_ADDR 20
 #define LINE_3_START_ADDR 84
 
+#define NUM_FIELDS  5
 #define FIELD_0_POS 0
 #define FIELD_1_POS 20
 #define FIELD_2_POS 40
 #define FIELD_3_POS 60
-#define FIELD_4_POS 93
+#define FIELD_4_POS 73
 
 #define CMD_RETURN_HOME         0x02
 #define CMD_CLEAR_DISPLAY       0x01
@@ -33,6 +34,8 @@ class Lcd420 {
   void setBlinkingCursor();
   void moveCursorToLine(int line_num);
   void moveCursorToField(int field_num);
+  void moveCursorToNextField();
+  void moveCursorToPrevField();
   void moveCursor(int pos);
 
   private:
@@ -55,5 +58,8 @@ extern "C" void clear_line(CLcd420, int line_num);
 extern "C" void clear_screen(CLcd420);
 extern "C" void write_chars(CLcd420, char * c, int buff_size);
 extern "C" void set_blinking_cursor(CLcd420);
-extern "C" void move_cursor_to_line(CLcd420,int line_num);
+extern "C" void move_cursor_to_field(CLcd420, int field_num);
+extern "C" void move_cursor_to_line(CLcd420, int line_num);
+extern "C" void move_cursor_to_next_field(CLcd420);
+extern "C" void move_cursor_to_prev_field(CLcd420);
 extern "C" void move_cursor(CLcd420, int pos);

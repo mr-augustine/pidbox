@@ -120,7 +120,17 @@ void Lcd420::moveCursorToField(int field_num) {
   }
 }
 
+void Lcd420::moveCursorToNextField() {
+  int nextField = (currentField + NUM_FIELDS + 1) % NUM_FIELDS;
 
+  moveCursorToField(nextField);
+}
+
+void Lcd420::moveCursorToPrevField() {
+  int prevField = (currentField + NUM_FIELDS - 1) % NUM_FIELDS;
+
+  moveCursorToField(prevField);
+}
 
 /// C Below ///
 
@@ -146,6 +156,18 @@ void write_chars(CLcd420 lcd420, char * c, int buff_size) {
 
 void set_blinking_cursor(CLcd420 lcd420) {
   reinterpret_cast<Lcd420*>(lcd420)->setBlinkingCursor();
+}
+
+void move_cursor_to_field(CLcd420 lcd420, int field_num) {
+  reinterpret_cast<Lcd420*>(lcd420)->moveCursorToField(field_num);
+}
+
+void move_cursor_to_next_field(CLcd420 lcd420) {
+  reinterpret_cast<Lcd420*>(lcd420)->moveCursorToNextField();
+}
+
+void move_cursor_to_prev_field(CLcd420 lcd420) {
+  reinterpret_cast<Lcd420*>(lcd420)->moveCursorToPrevField();
 }
 
 void move_cursor_to_line(CLcd420 lcd420, int line_num) {
