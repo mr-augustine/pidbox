@@ -36,20 +36,27 @@ void Lcd420::clearLine(int line_num) {
   int cursorPos = getStartOfLine(line_num);
 
   myLcd->write(CURSOR_PREFIX + cursorPos);
+  // delay(DELAY_LENGTH);
   myLcd->write("                    ");
+  // delay(DELAY_LENGTH);
 }
 
 void Lcd420::clearScreen() {
   myLcd->write(SPECIAL_CMD);
+  delay(DELAY_LENGTH);
   myLcd->write(CMD_CLEAR_DISPLAY);
+  delay(DELAY_LENGTH);
 
   myLcd->write(SPECIAL_CMD);
+  delay(DELAY_LENGTH);
   myLcd->write(CMD_RETURN_HOME);
+  delay(DELAY_LENGTH);
 }
 
 void Lcd420::writeChars(char * c, int buff_size) {
   replaceNullWithSpace(c, buff_size);
   myLcd->write(c, buff_size);
+  // delay(DELAY_LENGTH);
 }
 
 void Lcd420::replaceNullWithSpace(char * c, int buff_size) {
@@ -62,15 +69,54 @@ void Lcd420::replaceNullWithSpace(char * c, int buff_size) {
 
 void Lcd420::setBlinkingCursor() {
   myLcd->write(SPECIAL_CMD);
+  delay(DELAY_LENGTH);
   myLcd->write(CMD_BLINKING_CURSOR_ON);
+  delay(DELAY_LENGTH);
+}
+
+void Lcd420::setUnderscoreCursor() {
+  myLcd->write(SPECIAL_CMD);
+  delay(DELAY_LENGTH);
+  myLcd->write(CMD_UNDERSCORE_CURSOR_ON);
+  delay(DELAY_LENGTH);
+}
+
+void Lcd420::turnBacklightOn() {
+  myLcd->write(BACKLIGHT_CMD);
+  delay(DELAY_LENGTH);
+  myLcd->write(CMD_BACKLIGHT_ON);
+  delay(DELAY_LENGTH);
+}
+
+void Lcd420::turnBacklightOff() {
+  myLcd->write(BACKLIGHT_CMD);
+  delay(DELAY_LENGTH);
+  myLcd->write(CMD_BACKLIGHT_OFF);
+  delay(DELAY_LENGTH);
+}
+
+void Lcd420::turnDisplayOn() {
+  myLcd->write(SPECIAL_CMD);
+  delay(DELAY_LENGTH);
+  myLcd->write(CMD_DISPLAY_ON);
+  delay(DELAY_LENGTH);
+}
+
+void Lcd420::turnDisplayOff() {
+  myLcd->write(SPECIAL_CMD);
+  delay(DELAY_LENGTH);
+  myLcd->write(CMD_DISPLAY_OFF);
+  delay(DELAY_LENGTH);
 }
 
 void Lcd420::moveCursorToLine(int line_num) {
   myLcd->write(SPECIAL_CMD);
+  // delay(DELAY_LENGTH);
 
   int cursorPos = getStartOfLine(line_num);
 
   myLcd->write(CURSOR_PREFIX + cursorPos);
+  delay(DELAY_LENGTH);
 }
 
 //Maps our intended position to controller's addressing
@@ -92,7 +138,9 @@ void Lcd420::moveCursor(int pos) {
   int real_pos = remapCursorPosition(pos);
   //int real_pos = pos;
   myLcd->write(SPECIAL_CMD);
+  // delay(DELAY_LENGTH);
   myLcd->write(CURSOR_PREFIX+real_pos);
+  delay(DELAY_LENGTH);
 }
 
 void Lcd420::moveCursorToField(int field_num) {
@@ -136,6 +184,13 @@ int Lcd420::getCurrentField() {
   return currentField;
 }
 
+void Lcd420::delay(uint16_t millisec) {
+  volatile uint16_t i = 0;
+
+  for (i = 0; i < 16000 * millisec; i++) {
+    __asm__ __volatile__("nop");
+  }
+}
 /// C Below ///
 
 CLcd420 new_CLcd420(int lcd_tx_pin, int lcd_rx_pin) {
@@ -160,6 +215,26 @@ void write_chars(CLcd420 lcd420, char * c, int buff_size) {
 
 void set_blinking_cursor(CLcd420 lcd420) {
   reinterpret_cast<Lcd420*>(lcd420)->setBlinkingCursor();
+}
+
+void set_underscore_cursor(CLcd420 lcd420) {
+  reinterpret_cast<Lcd420*>(lcd420)->setUnderscoreCursor();
+}
+
+void turn_backlight_on(CLcd420 lcd420) {
+  reinterpret_cast<Lcd420*>(lcd420)->turnBacklightOn();
+}
+
+void turn_backlight_off(CLcd420 lcd420) {
+  reinterpret_cast<Lcd420*>(lcd420)->turnBacklightOff();
+}
+
+void turn_display_on(CLcd420 lcd420) {
+  reinterpret_cast<Lcd420*>(lcd420)->turnDisplayOn();
+}
+
+void turn_display_off(CLcd420 lcd420) {
+  reinterpret_cast<Lcd420*>(lcd420)->turnDisplayOff();
 }
 
 void move_cursor_to_field(CLcd420 lcd420, int field_num) {

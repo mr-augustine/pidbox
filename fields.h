@@ -9,6 +9,11 @@
 #define TYPE_INCREMENT_BY 1
 #define TYPE_STATUS       2
 
+#define STATE_READY 0
+#define STATE_WAITING 1
+#define STATE_RECVD 2
+#define STATE_ERROR 3
+
 typedef struct {
   uint8_t is_selected;
   uint8_t type;
@@ -108,9 +113,12 @@ void update_status_field_text(field_t * field) {
         strcpy(field->text, "Ready!");
         break;
       case 1:
-        strcpy(field->text, "Recvd!");
+        strcpy(field->text, "Wait");
         break;
       case 2:
+        strcpy(field->text, "Recvd!");
+        break;
+      case 3:
         strcpy(field->text, "Error");
         break;
       default:
