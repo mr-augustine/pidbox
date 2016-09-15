@@ -56,7 +56,7 @@ void mutate_field(field_t * field, float by) {
       mutate_numerical(field, by);
       break;
     case TYPE_INCREMENT_BY:
-      mutate_increment_by(field, ((int)(field->value + by)) % NUM_INCREMENTS);
+      mutate_increment_by(field, ((int)(field->value + by + NUM_INCREMENTS)) % NUM_INCREMENTS);
       break;
     case TYPE_STATUS:
       mutate_status(field, by);

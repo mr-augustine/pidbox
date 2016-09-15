@@ -92,7 +92,7 @@ void loop() {
 
 float get_increment_value(field_t * field) {
   if (field->type == TYPE_NUMERICAL) {
-    return increment_by.value;
+    return get_increment_value(increment_by.value);
   }
 
   return 1;
