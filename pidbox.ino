@@ -4,12 +4,26 @@
  * author(s): mr-augustine, khaosduke
  *
  */
+#include <EEPROM.h>
 #include "Lcd420.h"
 #include "buttons.h"
 #include "fields.h"
 
 #define LCD_RX_PIN 2
 #define LCD_TX_PIN 3
+
+#define K_PROP_ADDR 37
+#define K_INTEG_ADDR 81
+#define K_DERIV_ADDR 127
+
+#define K_PROP_DEFAULT 1
+#define K_INTEG_DEFAULT 0
+#define K_DERIV_DEFAULT 0
+
+// If the sentinel value is written to the EEPROM at the specified address, then
+// we will pull the pid values from the EEPROM.
+#define PIDBOX_INDICATOR_ADDR 27
+#define PIDBOX_INDICATOR_SENTINEL 213
 
 CLcd420 lcd = new_CLcd420(LCD_TX_PIN, LCD_RX_PIN);
 
@@ -58,6 +72,12 @@ void loop() {
       mutate_field(selected_field, decrement_by);
     } else if (button_pressed(&select)) {
       Serial.println("**************************deselected pressed");
+
+      if (selected_field->type == TYPE_NUMERICAL) {
+        save_pid_value(get_eeprom_address(), selected_field->value);
+        set_pidbox_sentinel();
+      }
+
       deselect_field(selected_field);
     }
   }
@@ -98,6 +118,17 @@ float get_increment_value(field_t * field) {
   return 1;
 }
 
+int get_eeprom_address(void) {
+  switch (get_current_field(lcd)) {
+    case 0:
+      return K_PROP_ADDR;
+    case 1:
+      return K_INTEG_ADDR;
+    case 2:
+      return K_DERIV_ADDR;
+  }
+}
+
 void init_line_buffers(void) {
   memset(line_0, 0x20, NUM_COLUMNS);
   memset(line_1, 0x20, NUM_COLUMNS);
@@ -112,9 +143,27 @@ void set_all_fields(void) {
   all_fields[3] = &increment_by;
   all_fields[4] = &status;
 
-  init_field(&k_proportional, 0, 0, 5.14567890);
-  init_field(&k_integral, 0, 0, 6.56789321);
-  init_field(&k_derivative, 0, 0, 9.867530909);
+  char val_buff[4] = {0};
+
+  if (pidbox_sentinel_is_set()) {
+    float saved_k_prop = get_pid_value(K_PROP_ADDR);
+    float saved_k_integ = get_pid_value(K_INTEG_ADDR);
+    float saved_k_deriv = get_pid_value(K_DERIV_ADDR);
+
+    Serial.println("****pidbox sentinel is set****");
+    init_field(&k_proportional, 0, 0, saved_k_prop);
+    init_field(&k_integral, 0, 0, saved_k_integ);
+    init_field(&k_derivative, 0, 0, saved_k_deriv);
+  } else {
+    Serial.println("****pidbox sentinel is NOT set****");
+    init_field(&k_proportional, 0, 0, K_PROP_DEFAULT);
+    init_field(&k_integral, 0, 0, K_INTEG_DEFAULT);
+    init_field(&k_derivative, 0, 0, K_DERIV_DEFAULT);
+  }
+
+  // init_field(&k_proportional, 0, 0, 5.14567890);
+  // init_field(&k_integral, 0, 0, 6.56789321);
+  // init_field(&k_derivative, 0, 0, 9.867530909);
   init_field(&increment_by, 0, 1, 0);
   init_field(&status, 0, 2, 0);
 
@@ -158,6 +207,38 @@ field_t * get_selected_field(void) {
   }
 
   return NULL;
+}
+
+float get_pid_value(int addr) {
+  char field_buff[4];
+
+  for (int i = 0; i < 4; i++) {
+    field_buff[i] = EEPROM.read(i);
+  }
+
+  float saved_value;
+
+  memcpy(&saved_value, field_buff, 4);
+
+  return saved_value;
+}
+
+void save_pid_value(int addr, float val) {
+  for (int i = 0; i < 4; i++) {
+    EEPROM[i] = ((char *)&val)[i];
+  }
+}
+
+uint8_t pidbox_sentinel_is_set(void) {
+  return (EEPROM[PIDBOX_INDICATOR_ADDR] == PIDBOX_INDICATOR_SENTINEL);
+}
+
+void set_pidbox_sentinel(void) {
+  if (pidbox_sentinel_is_set()) {
+    return;
+  }
+
+  EEPROM.write(PIDBOX_INDICATOR_ADDR, PIDBOX_INDICATOR_SENTINEL);
 }
 
 void redraw_line(uint8_t field_num) {
