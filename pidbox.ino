@@ -50,10 +50,7 @@ void setup() {
   set_all_fields();
   set_blinking_cursor(lcd);
   move_cursor_to_field(lcd, 0);
- //move_cursor(lcd,19);
-
   redraw_all_fields();
-
 }
 
 void loop() {
@@ -71,7 +68,6 @@ void loop() {
 
       mutate_field(selected_field, decrement_by);
     } else if (button_pressed(&select)) {
-      Serial.println("**************************deselected pressed");
 
       if (selected_field->type == TYPE_NUMERICAL) {
         save_pid_value(get_eeprom_address(), selected_field->value);
@@ -90,23 +86,10 @@ void loop() {
     } else if (button_pressed(&decrement)) {
       move_cursor_to_next_field(lcd);
     } else if (button_pressed(&select)) {
-      Serial.println("**************************selected pressed");
-
-      // highlighted_field->is_selected = 1;
-      //all_fields[get_current_field(lcd)]->is_selected = 1;
       select_field(highlighted_field);
-      Serial.print("get current field is --------------------->>>");
-      Serial.println(get_current_field(lcd));
     }
-
-    Serial.println(k_proportional.is_selected);
-    Serial.println(k_integral.is_selected);
-    Serial.println(k_derivative.is_selected);
   }
 
-
-  // redraw all fields
-  //redraw_all_fields();all_fields[0]
   redraw_line(get_current_field(lcd));
 }
 
@@ -161,33 +144,19 @@ void set_all_fields(void) {
     init_field(&k_derivative, 0, 0, K_DERIV_DEFAULT);
   }
 
-  // init_field(&k_proportional, 0, 0, 5.14567890);
-  // init_field(&k_integral, 0, 0, 6.56789321);
-  // init_field(&k_derivative, 0, 0, 9.867530909);
   init_field(&increment_by, 0, 1, 0);
   init_field(&status, 0, 2, 0);
-
-  Serial.print("k_prop.is_selected: ");
-  Serial.println(k_proportional.is_selected);
 }
 
 uint8_t field_is_selected(void) {
-  Serial.println("In field_is_selected()");
   int num_fields = sizeof(all_fields) / sizeof(field_t *);
-
-  Serial.println("------");
-  Serial.print("k_prop.is_selected: ");
-  Serial.println(k_proportional.is_selected);
 
   for (int i = 0; i < num_fields; i++) {
     if (all_fields[i]->is_selected) {
-      Serial.println(all_fields[i]->is_selected, DEC);
-      Serial.println("a field was selected");
       return 1;
     }
   }
 
-  Serial.println("no fields selected");
   return 0;
 }
 
@@ -213,7 +182,7 @@ float get_pid_value(int addr) {
   char field_buff[4];
 
   for (int i = 0; i < 4; i++) {
-    field_buff[i] = EEPROM.read(i);
+    field_buff[i] = EEPROM.read(addr + i);
   }
 
   float saved_value;
@@ -225,7 +194,7 @@ float get_pid_value(int addr) {
 
 void save_pid_value(int addr, float val) {
   for (int i = 0; i < 4; i++) {
-    EEPROM[i] = ((char *)&val)[i];
+    EEPROM[addr + i] = ((char *)&val)[i];
   }
 }
 
@@ -234,11 +203,13 @@ uint8_t pidbox_sentinel_is_set(void) {
 }
 
 void set_pidbox_sentinel(void) {
-  if (pidbox_sentinel_is_set()) {
-    return;
-  }
+  // if (pidbox_sentinel_is_set()) {
+  //   return;
+  // }
 
-  EEPROM.write(PIDBOX_INDICATOR_ADDR, PIDBOX_INDICATOR_SENTINEL);
+  // using update() instead of write, since it checks if the value is already
+  // written at that address before needlessly writing it again
+  EEPROM.update(PIDBOX_INDICATOR_ADDR, PIDBOX_INDICATOR_SENTINEL);
 }
 
 void redraw_line(uint8_t field_num) {
@@ -282,7 +253,6 @@ void redraw_line(uint8_t field_num) {
 }
 
 void redraw_all_fields(void) {
-  Serial.println("In redraw_all_fields()");
   redraw_line(0);
   redraw_line(1);
   redraw_line(2);
