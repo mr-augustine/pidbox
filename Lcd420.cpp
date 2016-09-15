@@ -90,7 +90,7 @@ int Lcd420::remapCursorPosition(int pos) {
 
 void Lcd420::moveCursor(int pos) {
   int real_pos = remapCursorPosition(pos);
-
+  //int real_pos = pos;
   myLcd->write(SPECIAL_CMD);
   myLcd->write(CURSOR_PREFIX+real_pos);
 }
@@ -130,6 +130,10 @@ void Lcd420::moveCursorToPrevField() {
   int prevField = (currentField + NUM_FIELDS - 1) % NUM_FIELDS;
 
   moveCursorToField(prevField);
+}
+
+int Lcd420::getCurrentField() {
+  return currentField;
 }
 
 /// C Below ///
@@ -176,4 +180,8 @@ void move_cursor_to_line(CLcd420 lcd420, int line_num) {
 
 void move_cursor(CLcd420 lcd420, int pos) {
   reinterpret_cast<Lcd420*>(lcd420)->moveCursor(pos);
+}
+
+int get_current_field(CLcd420 lcd420) {
+   return reinterpret_cast<Lcd420*>(lcd420)->getCurrentField();
 }

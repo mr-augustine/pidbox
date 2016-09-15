@@ -3,10 +3,10 @@
 
 #include <stdint.h>
 
-#define INCREMENT_BUTTON_PIN  4
-#define DECREMENT_BUTTON_PIN  5
-#define SELECT_BUTTON_PIN     6
-#define KILL_BUTTON_PIN       7
+#define INCREMENT_BUTTON_PIN  7
+#define DECREMENT_BUTTON_PIN  6
+#define SELECT_BUTTON_PIN     5
+#define KILL_BUTTON_PIN       4
 
 typedef struct {
   uint8_t pin;
@@ -61,11 +61,13 @@ void update_all_buttons(void) {
 }
 
 uint8_t button_pressed(volatile button_t * button) {
+  // Serial.println("In button_pressed()");
   if (button->prev_state == HIGH &&
       button->curr_state == LOW) {
+    // Serial.println("button changed");
     return 1;
   }
-
+  // Serial.println("no change");
   return 0;
 }
 

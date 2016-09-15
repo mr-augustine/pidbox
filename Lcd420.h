@@ -37,6 +37,7 @@ class Lcd420 {
   void moveCursorToNextField();
   void moveCursorToPrevField();
   void moveCursor(int pos);
+  int getCurrentField();
 
   private:
   int currentField;
@@ -63,3 +64,4 @@ extern "C" void move_cursor_to_line(CLcd420, int line_num);
 extern "C" void move_cursor_to_next_field(CLcd420);
 extern "C" void move_cursor_to_prev_field(CLcd420);
 extern "C" void move_cursor(CLcd420, int pos);
+extern "C" int get_current_field(CLcd420);
