@@ -21,7 +21,7 @@
 #define K_INTEG_DEFAULT 0
 #define K_DERIV_DEFAULT 0
 
-#define MAX_TRIES 5
+#define MAX_TRIES 50
 
 // If the sentinel value is written to the EEPROM at the specified address, then
 // we will pull the pid values from the EEPROM.
@@ -73,6 +73,10 @@ void setup() {
 void loop() {
   update_all_buttons();
 
+  if (button_pressed(&killswitch)) {
+
+  }
+
   if (field_is_selected()) {
     field_t * selected_field = get_selected_field();
 
@@ -90,6 +94,7 @@ void loop() {
         save_pid_value(get_eeprom_address(), selected_field->value);
         set_pidbox_sentinel();
       } else if (selected_field->type == TYPE_STATUS) {
+        Serial.println("Set status to WAITING");
         selected_field->value = STATE_WAITING;
         status_is_dirty = 1;
         transmit_pid_values();
@@ -124,28 +129,33 @@ void loop() {
           case STATE_READY:
             select_field(highlighted_field);
             break;
-          case STATE_WAITING:
-            uint8_t values_were_recvd = 0;
-
-            for (int i = 0; i < MAX_TRIES; i++) {
-              delay(500);
-
-              if (read_returned_pid_values()) {
-                highlighted_field->value = STATE_RECVD;
-                status_is_dirty = 1;
-                values_were_recvd = 1;
-                break;
-              }
-            }
-
-            if (values_were_recvd) {
-              break;
-            }
-
-            highlighted_field->value = STATE_ERROR;
-            status_is_dirty = 1;
         } // switch
       }
+    } else if (highlighted_field->value == STATE_WAITING) {
+      deselect_field(highlighted_field);
+      Serial.println("In waiting");
+      uint8_t values_were_recvd = 0;
+
+      for (int i = 0; i < MAX_TRIES; i++) {
+        delay(500);
+
+        if (read_returned_pid_values()) {
+          Serial.println("---\nReceived values");
+          Serial.println(k_proportional.value);
+          Serial.println(k_integral.value);
+          Serial.println(k_derivative.value);
+          highlighted_field->value = STATE_RECVD;
+          status_is_dirty = 1;
+          values_were_recvd = 1;
+          break;
+        }
+      }
+
+      if (!values_were_recvd) {
+        highlighted_field->value = STATE_ERROR;
+      }
+
+      status_is_dirty = 1;
     }
   }
 
@@ -164,15 +174,16 @@ void transmit_pid_values(void) {
 
 uint8_t read_returned_pid_values(void) {
   if (myXbee->available()) {
+    Serial.println("XBee is available");
     while (myXbee->available()) {
       for (int byte_index = 0; byte_index < sizeof(pid_buff); byte_index++) {
         pid_buff[byte_index] = myXbee->read();
       }
     }
 
-    k_proportional.value = (float) pid_buff[0];
-    k_integral.value = (float) pid_buff[sizeof(float)];
-    k_derivative.value = (float) pid_buff[2 * sizeof(float)];
+    k_proportional.value = *((float *) pid_buff);
+    k_integral.value = *((float *) (pid_buff + sizeof(float)));
+    k_derivative.value = *((float *) (pid_buff + (2 * sizeof(float))));
 
     return 1;
   }
